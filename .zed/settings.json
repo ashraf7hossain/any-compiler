@@ -1,0 +1,12 @@
+{
+  "lsp": {
+    "clangd": {
+      "initialization_options": {
+        "fallbackFlags": [
+          "-I/usr/include",
+          "-I/usr/local/include",
+        ],
+      },
+    },
+  },
+}

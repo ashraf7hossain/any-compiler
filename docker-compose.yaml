@@ -1,0 +1,7 @@
+services:
+  c-dev:
+    build: .
+    container_name: c-dev-environment
+    volumes:
+      - .:/usr/src/app
+    tty: true

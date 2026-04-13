@@ -1,10 +1,14 @@
 .PHONY: build release clean install install-deb install-rpm help
 
 COMPILER = g++
-FLAGS = -std=c++11 -Wall -Wextra
-RELEASE_FLAGS = -O2 -Wall -Wextra -std=c++11
+VERSION = 0.0.0
+
+# Pass the version into the compiler as a string macro APP_VERSION
+# The macro will be available in code as APP_VERSION (e.g. printf("%s", APP_VERSION);)
+FLAGS = -std=c++11 -Wall -Wextra -DAPP_VERSION=\"$(VERSION)\"
+RELEASE_FLAGS = -O2 -Wall -Wextra -std=c++11 -DAPP_VERSION=\"$(VERSION)\"
+
 BINARY = any-compiler
-VERSION = 1.0.0
 
 help:
 	@echo "any-compiler Makefile"
@@ -20,10 +24,12 @@ help:
 	@echo ""
 
 build:
+	@echo "Building (debug) with APP_VERSION=$(VERSION)"
 	$(COMPILER) $(FLAGS) src/main.cpp -o $(BINARY)
 	@echo "✓ Built: $(BINARY)"
 
 release:
+	@echo "Building (release) with APP_VERSION=$(VERSION)"
 	$(COMPILER) $(RELEASE_FLAGS) src/main.cpp -o $(BINARY)
 	@echo "✓ Release build complete: $(BINARY)"
 

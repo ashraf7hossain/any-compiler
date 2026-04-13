@@ -36,10 +36,20 @@ echo "OS: $OS, Architecture: $ARCH"
 
 # Determine download URL
 if [ "$VERSION" = "latest" ]; then
-  RELEASE_INFO=$(curl -sSL "https://api.github.com/repos/$REPO/releases/latest")
-  TAG=$(echo "$RELEASE_INFO" | grep '"tag_name"' | head -1 | cut -d'"' -f4)
+  RELEASE_INFO=$(curl -fsSL "https://api.github.com/repos/$REPO/releases/latest" || true)
+  TAG=$(printf "%s" "$RELEASE_INFO" | grep -oE '"tag_name"[[:space:]]*:[[:space:]]*"[^"]+"' | head -1 | cut -d'"' -f4)
+  if [ -z "$TAG" ]; then
+    echo -e "${RED}✗ Could not determine latest release tag${NC}"
+    echo "Make sure at least one GitHub Release exists, or provide VERSION explicitly."
+    echo "Example: VERSION=1.0.0 curl -sSL https://raw.githubusercontent.com/$REPO/main/scripts/install.sh | bash"
+    exit 1
+  fi
 else
-  TAG="v$VERSION"
+  if [[ "$VERSION" == v* ]]; then
+    TAG="$VERSION"
+  else
+    TAG="v$VERSION"
+  fi
 fi
 
 DOWNLOAD_URL="https://github.com/$REPO/releases/download/$TAG/any-compiler-$OS-$ARCH"
@@ -47,7 +57,7 @@ DOWNLOAD_URL="https://github.com/$REPO/releases/download/$TAG/any-compiler-$OS-$
 echo "Downloading from: $DOWNLOAD_URL"
 
 # Download binary
-if ! curl -sSL "$DOWNLOAD_URL" -o /tmp/any-compiler; then
+if ! curl -fsSL "$DOWNLOAD_URL" -o /tmp/any-compiler; then
   echo -e "${RED}✗ Failed to download binary${NC}"
   echo "Please check your internet connection or visit:"
   echo "https://github.com/$REPO/releases"
@@ -58,12 +68,25 @@ fi
 chmod +x /tmp/any-compiler
 
 # Verify checksum if available
-if curl -sSL "$DOWNLOAD_URL.sha256" -o /tmp/any-compiler.sha256 2>/dev/null; then
+if curl -fsSL "$DOWNLOAD_URL.sha256" -o /tmp/any-compiler.sha256 2>/dev/null; then
   echo -e "${YELLOW}Verifying checksum...${NC}"
-  (cd /tmp && sha256sum -c any-compiler.sha256) || {
-    echo -e "${RED}✗ Checksum verification failed${NC}"
-    exit 1
-  }
+  if grep -Eq '^[a-fA-F0-9]{64}[[:space:]]+\*?any-compiler$' /tmp/any-compiler.sha256; then
+    (cd /tmp && sha256sum -c any-compiler.sha256) || {
+      echo -e "${RED}✗ Checksum verification failed${NC}"
+      exit 1
+    }
+  elif grep -Eq '^[a-fA-F0-9]{64}$' /tmp/any-compiler.sha256; then
+    EXPECTED_SUM=$(cat /tmp/any-compiler.sha256)
+    ACTUAL_SUM=$(sha256sum /tmp/any-compiler | awk '{print $1}')
+    if [ "$EXPECTED_SUM" != "$ACTUAL_SUM" ]; then
+      echo -e "${RED}✗ Checksum verification failed${NC}"
+      exit 1
+    fi
+  else
+    echo -e "${YELLOW}Checksum file format not recognized, skipping verification${NC}"
+  fi
+else
+  echo -e "${YELLOW}No checksum file found for this release asset, skipping verification${NC}"
 fi
 
 # Install to system PATH

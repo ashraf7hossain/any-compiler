@@ -1,0 +1,24 @@
+# FPM package configuration for any-compiler
+# Usage: fpm -f --config-files packaging/fpm-config
+
+name "any-compiler"
+version "1.0.0"
+description "Compile code in any language via OneCompiler API"
+maintainer "Your Name <your.email@example.com>"
+homepage "https://github.com/yourusername/any-compiler"
+license "MIT"
+
+depends "curl"
+
+input "dir"
+output "deb"
+output "rpm"
+
+after_install "packaging/scripts/post-install.sh"
+after_remove "packaging/scripts/post-remove.sh"
+
+# Package the binary
+file_input "any-compiler" do |path|
+  path.output = "/usr/local/bin/any-compiler"
+  path.permissions = "0755"
+end

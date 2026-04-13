@@ -1,0 +1,27 @@
+# Build artifacts
+any-compiler
+any-compiler.exe
+*.o
+*.a
+*.so
+*.dylib
+
+# Package files
+*.deb
+*.rpm
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS specific
+.DS_Store
+Thumbs.db
+
+# Build directories
+build/
+dist/
+/tmp/

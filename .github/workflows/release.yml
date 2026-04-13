@@ -1,0 +1,57 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Build any-compiler
+        run: |
+          g++ -O2 src/main.cpp -o any-compiler
+      
+      - name: Create SHA256 checksum
+        run: |
+          sha256sum any-compiler > any-compiler.sha256
+      
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            any-compiler
+            any-compiler.sha256
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Build deb package
+        run: |
+          mkdir -p /tmp/any-compiler-deb/usr/local/bin
+          cp any-compiler /tmp/any-compiler-deb/usr/local/bin/
+          chmod +x /tmp/any-compiler-deb/usr/local/bin/any-compiler
+          
+          mkdir -p /tmp/any-compiler-deb/DEBIAN
+          cat > /tmp/any-compiler-deb/DEBIAN/control << EOF
+          Package: any-compiler
+          Version: ${GITHUB_REF#refs/tags/v}
+          Architecture: amd64
+          Maintainer: Your Name <your.email@example.com>
+          Description: Compile code in any language via OneCompiler API
+           any-compiler is a command-line tool for compiling and executing code
+           in multiple programming languages using the OneCompiler API.
+          EOF
+          
+          dpkg-deb --build /tmp/any-compiler-deb any-compiler_${GITHUB_REF#refs/tags/v}_amd64.deb
+      
+      - name: Upload deb to Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: any-compiler_*.deb
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -1,18 +1,36 @@
 #include "json_helper.cpp"
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 
+// #define MAX_COMMAND_LENGTH 0x100
 #define MAX_COMMAND_LENGTH 0xFFFF
 #define MAX_PAYLOAD_SIZE 0x20000
 #define BUFFER_SIZE 0x20000
 
 const char *BASE_URL = "https://onecompiler.com/api/code/exec";
 
+const char *REQUEST_STR = "";
+
+// void make_http_call(const char *request) {
+
+//   // printf("Executing command:\n%s\n", request);
+
+//   FILE *f_curl = popen(request, "r");
+
+//   if (f_curl == NULL) {
+//     fprintf(stderr, "Error opening pipe to curl\n");
+//     exit(1);
+//   }
+
+//   char buffer[BUFFER_SIZE];
+//   while (fgets(buffer, sizeof(buffer), f_curl)) {
+//     printf("%s", buffer);
+//   }
+
+//   pclose(f_curl);
+// }
+
 void make_http_call(const char *request) {
-
-  // printf("Executing command:\n%s\n", request);
-
   FILE *f_curl = popen(request, "r");
 
   if (f_curl == NULL) {
@@ -22,7 +40,22 @@ void make_http_call(const char *request) {
 
   char buffer[BUFFER_SIZE];
   while (fgets(buffer, sizeof(buffer), f_curl)) {
-    printf("%s", buffer);
+    // printf("response: %s\n", buffer);
+    if (buffer[0] == '{') {
+      SampleStruct *sample = parse_sample_struct(buffer);
+      if (sample != NULL) {
+        printf("parsed status: %d (%s)\n", sample->status.id,
+               sample->status.description ? sample->status.description
+                                          : "unknown");
+        printf("parsed stdout: %s\n",
+               sample->stdout_text ? sample->stdout_text : "(null)");
+        printf("parsed stderr: %s\n",
+               sample->stderr_text ? sample->stderr_text : "(null)");
+        printf("parsed compile_output: %s\n",
+               sample->compile_output ? sample->compile_output : "(null)");
+        free_sample_struct(sample);
+      }
+    }
   }
 
   pclose(f_curl);

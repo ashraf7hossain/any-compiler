@@ -3,8 +3,6 @@
 #include <string.h>
 #include <unordered_map>
 
-#define BUFFER_SIZE 0x100
-
 #define c 1
 #define cpp 2
 #define py 3
@@ -19,6 +17,8 @@
 const char *LANGUAGES[11] = {"",           "c",    "cpp",  "python",
                              "javascript", "java", "ruby", "go",
                              "rust",       "php",  "c#"};
+
+const int BUFFER_SIZE = 0x100;
 
 char *read_file_to_string(const char *filename_with_path) {
   FILE *fp = fopen(filename_with_path, "rb");
@@ -44,7 +44,7 @@ char *read_file_to_string(const char *filename_with_path) {
     return NULL;
   }
 
-  printf("Read %zu bytes from file\n", bytes_read);
+  // printf("Read %zu bytes from file\n", bytes_read);
   buffer[length] = '\0'; // Null-terminate
 
   fclose(fp);

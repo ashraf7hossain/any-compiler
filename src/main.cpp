@@ -15,7 +15,7 @@ int main(int argc, char *argv[]) {
     
     // Handle flags
     if (strcmp(arg, "--version") == 0 || strcmp(arg, "-v") == 0) {
-      printf("any-compiler version 1.0.0\n");
+      printf("any-compiler version %s\n", APP_VERSION);
       return 0;
     }
     

@@ -69,14 +69,48 @@ if [ -z "$DOWNLOAD_URL" ]; then
   DOWNLOAD_URL="https://github.com/$REPO/releases/download/$TAG/any-compiler-$OS-$ARCH"
 fi
 
+TARBALL_URL=$(printf "%s" "$RELEASE_JSON" | grep -oE '"tarball_url"[[:space:]]*:[[:space:]]*"[^"]+"' | head -1 | cut -d'"' -f4)
+
 echo "Downloading from: $DOWNLOAD_URL"
 
 # Download binary
 if ! curl -fsSL "$DOWNLOAD_URL" -o /tmp/any-compiler; then
-  echo -e "${RED}✗ Failed to download binary${NC}"
-  echo "Please check your internet connection or visit:"
-  echo "https://github.com/$REPO/releases"
-  exit 1
+  echo -e "${YELLOW}No compatible binary asset found in release, trying source build fallback...${NC}"
+  if [ -z "$TARBALL_URL" ]; then
+    echo -e "${RED}✗ Failed to download binary and no source tarball URL was found${NC}"
+    echo "Please upload release assets or check: https://github.com/$REPO/releases"
+    exit 1
+  fi
+
+  if ! command -v g++ >/dev/null 2>&1; then
+    echo -e "${RED}✗ g++ is required for source fallback build but was not found${NC}"
+    echo "Install build tools (example: apt-get update; apt-get install -y g++)"
+    exit 1
+  fi
+
+  BUILD_DIR=$(mktemp -d)
+  if [ -z "$BUILD_DIR" ] || [ ! -d "$BUILD_DIR" ]; then
+    echo -e "${RED}✗ Could not create temporary build directory${NC}"
+    exit 1
+  fi
+
+  trap 'rm -rf "$BUILD_DIR"' EXIT
+
+  echo "Downloading source tarball: $TARBALL_URL"
+  curl -fsSL "$TARBALL_URL" -o "$BUILD_DIR/source.tar.gz"
+  tar -xzf "$BUILD_DIR/source.tar.gz" -C "$BUILD_DIR"
+
+  SRC_ROOT=$(find "$BUILD_DIR" -mindepth 1 -maxdepth 1 -type d | head -1)
+  if [ -z "$SRC_ROOT" ] || [ ! -f "$SRC_ROOT/src/main.cpp" ]; then
+    echo -e "${RED}✗ Source layout not recognized in tarball${NC}"
+    exit 1
+  fi
+
+  echo "Building from source..."
+  if ! g++ -O2 "$SRC_ROOT/src/main.cpp" -o /tmp/any-compiler; then
+    echo -e "${RED}✗ Source fallback build failed${NC}"
+    exit 1
+  fi
 fi
 
 # Make executable

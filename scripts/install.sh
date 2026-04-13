@@ -34,13 +34,23 @@ echo "Repository: $REPO"
 echo "Install path: $INSTALL_PATH"
 echo "OS: $OS, Architecture: $ARCH"
 
-# Determine download URL
+# Determine release tag and release metadata
+RELEASE_JSON=""
 if [ "$VERSION" = "latest" ]; then
-  RELEASE_INFO=$(curl -fsSL "https://api.github.com/repos/$REPO/releases/latest" || true)
-  TAG=$(printf "%s" "$RELEASE_INFO" | grep -oE '"tag_name"[[:space:]]*:[[:space:]]*"[^"]+"' | head -1 | cut -d'"' -f4)
+  RELEASE_JSON=$(curl -fsSL "https://api.github.com/repos/$REPO/releases/latest" || true)
+  TAG=$(printf "%s" "$RELEASE_JSON" | grep -oE '"tag_name"[[:space:]]*:[[:space:]]*"[^"]+"' | head -1 | cut -d'"' -f4)
+
+  # Fallback: if no latest release exists, try newest git tag.
   if [ -z "$TAG" ]; then
-    echo -e "${RED}✗ Could not determine latest release tag${NC}"
-    echo "Make sure at least one GitHub Release exists, or provide VERSION explicitly."
+    TAG=$(curl -fsSL "https://api.github.com/repos/$REPO/tags" | grep -oE '"name"[[:space:]]*:[[:space:]]*"[^"]+"' | head -1 | cut -d'"' -f4 || true)
+    if [ -n "$TAG" ]; then
+      RELEASE_JSON=$(curl -fsSL "https://api.github.com/repos/$REPO/releases/tags/$TAG" || true)
+    fi
+  fi
+
+  if [ -z "$TAG" ]; then
+    echo -e "${RED}✗ Could not determine a version tag${NC}"
+    echo "Make sure at least one Git tag/release exists, or provide VERSION explicitly."
     echo "Example: VERSION=1.0.0 curl -sSL https://raw.githubusercontent.com/$REPO/main/scripts/install.sh | bash"
     exit 1
   fi
@@ -50,9 +60,14 @@ else
   else
     TAG="v$VERSION"
   fi
+  RELEASE_JSON=$(curl -fsSL "https://api.github.com/repos/$REPO/releases/tags/$TAG" || true)
 fi
 
-DOWNLOAD_URL="https://github.com/$REPO/releases/download/$TAG/any-compiler-$OS-$ARCH"
+# Prefer exact release asset URL from metadata; fallback to conventional URL.
+DOWNLOAD_URL=$(printf "%s" "$RELEASE_JSON" | grep -oE '"browser_download_url"[[:space:]]*:[[:space:]]*"[^"]+"' | cut -d'"' -f4 | grep -E "/any-compiler-$OS-$ARCH$" | head -1 || true)
+if [ -z "$DOWNLOAD_URL" ]; then
+  DOWNLOAD_URL="https://github.com/$REPO/releases/download/$TAG/any-compiler-$OS-$ARCH"
+fi
 
 echo "Downloading from: $DOWNLOAD_URL"
 
@@ -68,7 +83,12 @@ fi
 chmod +x /tmp/any-compiler
 
 # Verify checksum if available
-if curl -fsSL "$DOWNLOAD_URL.sha256" -o /tmp/any-compiler.sha256 2>/dev/null; then
+CHECKSUM_URL=$(printf "%s" "$RELEASE_JSON" | grep -oE '"browser_download_url"[[:space:]]*:[[:space:]]*"[^"]+"' | cut -d'"' -f4 | grep -E "/any-compiler-$OS-$ARCH\.sha256$" | head -1 || true)
+if [ -z "$CHECKSUM_URL" ]; then
+  CHECKSUM_URL="$DOWNLOAD_URL.sha256"
+fi
+
+if curl -fsSL "$CHECKSUM_URL" -o /tmp/any-compiler.sha256 2>/dev/null; then
   echo -e "${YELLOW}Verifying checksum...${NC}"
   if grep -Eq '^[a-fA-F0-9]{64}[[:space:]]+\*?any-compiler$' /tmp/any-compiler.sha256; then
     (cd /tmp && sha256sum -c any-compiler.sha256) || {

@@ -5,6 +5,9 @@ on:
     tags:
       - "v*"
 
+permissions:
+  contents: write
+
 jobs:
   build-binaries:
     name: Build binary (${{ matrix.target.os }}-${{ matrix.target.arch }})
@@ -73,7 +76,6 @@ jobs:
           files: |
             any-compiler-${{ matrix.target.os }}-${{ matrix.target.arch }}${{ matrix.target.exe }}
             any-compiler-${{ matrix.target.os }}-${{ matrix.target.arch }}${{ matrix.target.exe }}.sha256
-          generate_release_notes: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 

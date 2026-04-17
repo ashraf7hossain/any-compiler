@@ -6,7 +6,7 @@
 # Usage: curl -sSL https://raw.githubusercontent.com/ashraf7hossain/any-compiler/main/scripts/install.sh | bash
 # Or:    wget -qO- https://raw.githubusercontent.com/ashraf7hossain/any-compiler/main/scripts/install.sh | bash
 
-set -e
+set -euo pipefail
 
 # Color output
 RED='\033[0;31m'
@@ -18,6 +18,7 @@ NC='\033[0m' # No Color
 REPO="${REPO:-ashraf7hossain/any-compiler}"
 INSTALL_PATH="${INSTALL_PATH:-/usr/local/bin}"
 VERSION="${VERSION:-latest}"
+ALLOW_SOURCE_FALLBACK="${ALLOW_SOURCE_FALLBACK:-0}"
 
 # Detect OS and architecture
 OS=$(uname -s | tr '[:upper:]' '[:lower:]')
@@ -33,6 +34,7 @@ echo -e "${YELLOW}Installing any-compiler...${NC}"
 echo "Repository: $REPO"
 echo "Install path: $INSTALL_PATH"
 echo "OS: $OS, Architecture: $ARCH"
+echo "Source fallback enabled: $ALLOW_SOURCE_FALLBACK"
 
 # Determine release tag and release metadata
 RELEASE_JSON=""
@@ -75,7 +77,18 @@ echo "Downloading from: $DOWNLOAD_URL"
 
 # Download binary
 if ! curl -fsSL "$DOWNLOAD_URL" -o /tmp/any-compiler; then
-  echo -e "${YELLOW}No compatible binary asset found in release, trying source build fallback...${NC}"
+  echo -e "${YELLOW}No compatible binary asset found for tag $TAG and target $OS-$ARCH.${NC}"
+  if [ "$ALLOW_SOURCE_FALLBACK" != "1" ]; then
+    echo -e "${RED}✗ Binary-only install failed.${NC}"
+    echo "Upload asset: any-compiler-$OS-$ARCH to release $TAG, or set ALLOW_SOURCE_FALLBACK=1."
+    echo "Versioned install example:"
+    echo "  curl -fsSL https://raw.githubusercontent.com/$REPO/main/scripts/install.sh | VERSION=1.0.0 REPO=$REPO bash"
+    echo "Source fallback example:"
+    echo "  curl -fsSL https://raw.githubusercontent.com/$REPO/main/scripts/install.sh | VERSION=1.0.0 ALLOW_SOURCE_FALLBACK=1 REPO=$REPO bash"
+    exit 1
+  fi
+
+  echo -e "${YELLOW}ALLOW_SOURCE_FALLBACK=1 set, trying source build fallback...${NC}"
   if [ -z "$TARBALL_URL" ]; then
     echo -e "${RED}✗ Failed to download binary and no source tarball URL was found${NC}"
     echo "Please upload release assets or check: https://github.com/$REPO/releases"
@@ -136,7 +149,8 @@ if ! curl -fsSL "$DOWNLOAD_URL" -o /tmp/any-compiler; then
   fi
 
   echo "Building from source..."
-  if ! g++ -O2 "$SRC_ROOT/src/main.cpp" -o /tmp/any-compiler; then
+  BUILD_VERSION="${TAG#v}"
+  if ! g++ -O2 -std=c++11 -Wall -Wextra -DAPP_VERSION=\"${BUILD_VERSION}\" "$SRC_ROOT/src/main.cpp" -o /tmp/any-compiler; then
     echo -e "${RED}✗ Source fallback build failed${NC}"
     exit 1
   fi

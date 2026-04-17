@@ -4,6 +4,20 @@ Compile and execute code in any language via the **OneCompiler API**.
 
 ## Installation
 
+### Quick install from release binary (Linux/macOS, no source code required)
+
+Latest release:
+```bash
+curl -fsSL https://raw.githubusercontent.com/ashraf7hossain/any-compiler/main/scripts/install.sh | bash
+```
+
+Specific version:
+```bash
+curl -fsSL https://raw.githubusercontent.com/ashraf7hossain/any-compiler/main/scripts/install.sh | VERSION=1.0.0 REPO=ashraf7hossain/any-compiler bash
+```
+
+> Note: installer is binary-only by default. It fails if matching release assets are missing.
+
 ### Linux / macOS (build and install globally from source)
 
 ```bash
@@ -24,10 +38,9 @@ powershell -ExecutionPolicy Bypass -File .\scripts\install.ps1 -Version 1.0.0
 
 This installs `any-compiler.exe` to `%USERPROFILE%\.local\bin` and adds that path to your user `PATH`.
 
-### Optional release installer (Linux/macOS)
-
+Optional source fallback (only if you explicitly want it):
 ```bash
-curl -sSL https://raw.githubusercontent.com/ashraf7hossain/any-compiler/main/scripts/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/ashraf7hossain/any-compiler/main/scripts/install.sh | VERSION=1.0.0 ALLOW_SOURCE_FALLBACK=1 REPO=ashraf7hossain/any-compiler bash
 ```
 
 ### Homebrew (macOS/Linux)

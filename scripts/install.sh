@@ -83,9 +83,38 @@ if ! curl -fsSL "$DOWNLOAD_URL" -o /tmp/any-compiler; then
   fi
 
   if ! command -v g++ >/dev/null 2>&1; then
-    echo -e "${RED}✗ g++ is required for source fallback build but was not found${NC}"
-    echo "Install build tools (example: apt-get update; apt-get install -y g++)"
-    exit 1
+    echo -e "${YELLOW}g++ not found, attempting to install build tools...${NC}"
+
+    SUDO_CMD=""
+    if [ "$(id -u)" -ne 0 ]; then
+      if command -v sudo >/dev/null 2>&1; then
+        SUDO_CMD="sudo"
+      else
+        echo -e "${RED}✗ Need root or sudo privileges to install g++${NC}"
+        exit 1
+      fi
+    fi
+
+    if command -v apt-get >/dev/null 2>&1; then
+      $SUDO_CMD apt-get update && $SUDO_CMD apt-get install -y g++
+    elif command -v apk >/dev/null 2>&1; then
+      $SUDO_CMD apk add --no-cache g++
+    elif command -v dnf >/dev/null 2>&1; then
+      $SUDO_CMD dnf install -y gcc-c++
+    elif command -v yum >/dev/null 2>&1; then
+      $SUDO_CMD yum install -y gcc-c++
+    elif command -v pacman >/dev/null 2>&1; then
+      $SUDO_CMD pacman -Sy --noconfirm gcc
+    else
+      echo -e "${RED}✗ Could not auto-install g++; unsupported package manager${NC}"
+      echo "Please install g++ manually and rerun this installer."
+      exit 1
+    fi
+
+    if ! command -v g++ >/dev/null 2>&1; then
+      echo -e "${RED}✗ g++ installation attempt failed${NC}"
+      exit 1
+    fi
   fi
 
   BUILD_DIR=$(mktemp -d)

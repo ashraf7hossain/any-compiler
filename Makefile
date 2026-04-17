@@ -1,4 +1,4 @@
-.PHONY: build release clean install install-deb install-rpm help
+.PHONY: build release clean install install-global install-deb install-rpm uninstall help test-version
 
 COMPILER = g++
 VERSION = 0.0.0
@@ -8,7 +8,15 @@ VERSION = 0.0.0
 FLAGS = -std=c++11 -Wall -Wextra -DAPP_VERSION=\"$(VERSION)\"
 RELEASE_FLAGS = -O2 -Wall -Wextra -std=c++11 -DAPP_VERSION=\"$(VERSION)\"
 
-BINARY = any-compiler
+ifeq ($(OS),Windows_NT)
+EXE_EXT = .exe
+else
+EXE_EXT =
+endif
+
+BINARY_BASE = any-compiler
+BINARY = $(BINARY_BASE)$(EXE_EXT)
+INSTALL_DIR ?= /usr/local/bin
 
 help:
 	@echo "any-compiler Makefile"
@@ -17,7 +25,8 @@ help:
 	@echo "  make build          - Build binary with debug symbols"
 	@echo "  make release        - Build optimized release binary"
 	@echo "  make clean          - Remove build artifacts"
-	@echo "  make install        - Install to /usr/local/bin"
+	@echo "  make install        - Install globally for current OS"
+	@echo "  make install-global - Install globally for current OS"
 	@echo "  make install-deb    - Build and install .deb package"
 	@echo "  make install-rpm    - Build and install .rpm package"
 	@echo "  make test-version   - Test --version flag"
@@ -34,13 +43,18 @@ release:
 	@echo "✓ Release build complete: $(BINARY)"
 
 clean:
-	rm -f $(BINARY)
+	rm -f any-compiler any-compiler.exe
 	rm -f *.deb *.rpm
 	@echo "✓ Cleaned"
 
-install: release
-	sudo cp $(BINARY) /usr/local/bin/
-	@echo "✓ Installed to /usr/local/bin/$(BINARY)"
+install: install-global
+
+install-global:
+ifeq ($(OS),Windows_NT)
+	powershell -NoProfile -ExecutionPolicy Bypass -File scripts/install.ps1 -SourceDir "$(CURDIR)" -Version "$(VERSION)"
+else
+	bash scripts/install-source.sh "$(CURDIR)" "$(INSTALL_DIR)" "$(VERSION)"
+endif
 
 install-deb: release
 	bash packaging/build-deb.sh $(VERSION)
@@ -53,9 +67,18 @@ install-rpm: release
 	@echo "✓ Installed via .rpm"
 
 test-version: build
+ifeq ($(OS),Windows_NT)
+	.\$(BINARY) --version
+	.\$(BINARY) --help
+else
 	./$(BINARY) --version
 	./$(BINARY) --help
+endif
 
 uninstall:
-	sudo rm -f /usr/local/bin/$(BINARY)
-	@echo "✓ Uninstalled"
+ifeq ($(OS),Windows_NT)
+	powershell -NoProfile -ExecutionPolicy Bypass -File scripts/install.ps1 -Uninstall
+else
+	sudo rm -f "$(INSTALL_DIR)/$(BINARY)"
+	@echo "✓ Uninstalled $(INSTALL_DIR)/$(BINARY)"
+endif

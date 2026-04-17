@@ -4,40 +4,37 @@ Compile and execute code in any language via the **OneCompiler API**.
 
 ## Installation
 
-### Quick Install (Linux/macOS)
+### Linux / macOS (build and install globally from source)
 
-**From source:**
 ```bash
-curl -sSL https://raw.githubusercontent.com/yourusername/any-compiler/main/scripts/install.sh | bash
+git clone https://github.com/ashraf7hossain/any-compiler.git
+cd any-compiler
+make install-global VERSION=1.0.0
 ```
 
-Or manually download the [latest release](https://github.com/yourusername/any-compiler/releases).
+By default this installs to `/usr/local/bin/any-compiler`.
+
+### Windows (PowerShell, build and install globally from source)
+
+```powershell
+git clone https://github.com/ashraf7hossain/any-compiler.git
+cd any-compiler
+powershell -ExecutionPolicy Bypass -File .\scripts\install.ps1 -Version 1.0.0
+```
+
+This installs `any-compiler.exe` to `%USERPROFILE%\.local\bin` and adds that path to your user `PATH`.
+
+### Optional release installer (Linux/macOS)
+
+```bash
+curl -sSL https://raw.githubusercontent.com/ashraf7hossain/any-compiler/main/scripts/install.sh | bash
+```
 
 ### Homebrew (macOS/Linux)
 
 ```bash
-brew tap yourusername/any-compiler
+brew tap ashraf7hossain/any-compiler
 brew install any-compiler
-```
-
-### Debian/Ubuntu
-
-```bash
-sudo dpkg -i any-compiler_*.deb
-```
-
-Or add the repository:
-```bash
-# Coming soon
-```
-
-### From Source
-
-```bash
-git clone https://github.com/yourusername/any-compiler.git
-cd any-compiler
-g++ src/main.cpp -o any-compiler
-sudo mv any-compiler /usr/local/bin/
 ```
 
 ## Usage
@@ -153,11 +150,12 @@ Uses the **OneCompiler API** endpoint:
 
 ### Command not found
 
-Make sure `/usr/local/bin` is in your `$PATH`:
+Make sure your install directory is in your `PATH`:
 
 ```bash
 echo $PATH
-# Should include /usr/local/bin
+# Linux/macOS should include /usr/local/bin
+# Windows should include %USERPROFILE%\.local\bin
 ```
 
 ### CURL errors

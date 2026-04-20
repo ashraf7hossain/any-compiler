@@ -2,6 +2,8 @@
 #include <iostream>
 #include <cstring>
 
+const char *APP_VERSION = "1.0.01";
+
 int main(int argc, char *argv[]) {
   if (argc < 2) {
     printf("Usage: any-compiler <source-file>\n");
@@ -41,7 +43,7 @@ int main(int argc, char *argv[]) {
     if (source_code) {
       // printf("Source code:\n%s\n", source_code);
       compile_code(source_file,
-                   get_language_from_extension(read_extension(source_file)),
+                   get_language_name_from_extension(read_extension(source_file)),
                    read_extension(source_file));
       free(source_code);
     } else {

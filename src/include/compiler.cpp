@@ -1,6 +1,7 @@
+#include <iostream>
+#include "languages.cpp"
 #include "file_helper.cpp"
 #include "http_helper.cpp"
-#include <iostream>
 
 void compile_code(const char *source_file, const char *language,
                   const char *extension) {

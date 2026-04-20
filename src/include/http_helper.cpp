@@ -11,25 +11,6 @@ const char *BASE_URL = "https://onecompiler.com/api/code/exec";
 
 const char *REQUEST_STR = "";
 
-// void make_http_call(const char *request) {
-
-//   // printf("Executing command:\n%s\n", request);
-
-//   FILE *f_curl = popen(request, "r");
-
-//   if (f_curl == NULL) {
-//     fprintf(stderr, "Error opening pipe to curl\n");
-//     exit(1);
-//   }
-
-//   char buffer[BUFFER_SIZE];
-//   while (fgets(buffer, sizeof(buffer), f_curl)) {
-//     printf("%s", buffer);
-//   }
-
-//   pclose(f_curl);
-// }
-
 void make_http_call(const char *request) {
   FILE *f_curl = popen(request, "r");
 

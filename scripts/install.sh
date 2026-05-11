@@ -150,7 +150,7 @@ if ! curl -fsSL "$DOWNLOAD_URL" -o /tmp/any-compiler; then
 
   echo "Building from source..."
   BUILD_VERSION="${TAG#v}"
-  if ! g++ -O2 -std=c++11 -Wall -Wextra -DAPP_VERSION=\"${BUILD_VERSION}\" "$SRC_ROOT/src/main.cpp" -o /tmp/any-compiler; then
+  if ! g++ -O2 -std=c++11 -Wall -Wextra -DAPP_VERSION_STRING=\"${BUILD_VERSION}\" "$SRC_ROOT/src/main.cpp" -o /tmp/any-compiler; then
     echo -e "${RED}✗ Source fallback build failed${NC}"
     exit 1
   fi

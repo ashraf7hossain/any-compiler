@@ -37,7 +37,7 @@ $buildDir = Join-Path $env:TEMP "any-compiler-build"
 New-Item -ItemType Directory -Force -Path $buildDir | Out-Null
 $builtBinary = Join-Path $buildDir $BinaryName
 
-$versionFlag = "-DAPP_VERSION=`"$Version`""
+$versionFlag = "-DAPP_VERSION_STRING=\`"$Version\`""
 Write-Host "Building any-compiler from source..."
 & g++ -O2 -std=c++11 -Wall -Wextra $versionFlag $mainFile -o $builtBinary
 if ($LASTEXITCODE -ne 0) {

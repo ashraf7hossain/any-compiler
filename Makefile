@@ -3,10 +3,9 @@
 COMPILER = g++
 VERSION = 0.0.0
 
-# Pass the version into the compiler as a string macro APP_VERSION
-# The macro will be available in code as APP_VERSION (e.g. printf("%s", APP_VERSION);)
-FLAGS = -std=c++11 -Wall -Wextra -DAPP_VERSION=\"$(VERSION)\"
-RELEASE_FLAGS = -O2 -Wall -Wextra -std=c++11 -DAPP_VERSION=\"$(VERSION)\"
+# Pass the version into the compiler as a string macro APP_VERSION_STRING.
+FLAGS = -std=c++11 -Wall -Wextra -DAPP_VERSION_STRING=\"$(VERSION)\"
+RELEASE_FLAGS = -O2 -Wall -Wextra -std=c++11 -DAPP_VERSION_STRING=\"$(VERSION)\"
 
 ifeq ($(OS),Windows_NT)
 EXE_EXT = .exe
@@ -33,12 +32,12 @@ help:
 	@echo ""
 
 build:
-	@echo "Building (debug) with APP_VERSION=$(VERSION)"
+	@echo "Building (debug) with APP_VERSION_STRING=$(VERSION)"
 	$(COMPILER) $(FLAGS) src/main.cpp -o $(BINARY)
 	@echo "✓ Built: $(BINARY)"
 
 release:
-	@echo "Building (release) with APP_VERSION=$(VERSION)"
+	@echo "Building (release) with APP_VERSION_STRING=$(VERSION)"
 	$(COMPILER) $(RELEASE_FLAGS) src/main.cpp -o $(BINARY)
 	@echo "✓ Release build complete: $(BINARY)"
 

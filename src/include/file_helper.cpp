@@ -35,7 +35,7 @@ char *read_file_to_string(const char *filename_with_path) {
   fclose(fp);
   return buffer;
 }
-char *read_extension(char *filename) {
+const char *read_extension(char *filename) {
   char *dot = strrchr(filename, '.');
   if (!dot || dot == filename)
     return "";

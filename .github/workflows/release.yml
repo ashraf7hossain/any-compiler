@@ -47,14 +47,13 @@ jobs:
         if: runner.os != 'Windows'
         run: |
           VERSION="${GITHUB_REF_NAME#v}"
-          g++ -O2 -std=c++11 -Wall -Wextra -DAPP_VERSION=\"$VERSION\" src/main.cpp -o "any-compiler-${{ matrix.target.os }}-${{ matrix.target.arch }}"
-
+          g++ -O2 -std=c++11 -Wall -Wextra -DAPP_VERSION_STRING=\"$VERSION\" src/main.cpp -o "any-compiler-${{ matrix.target.os }}-${{ matrix.target.arch }}"
       - name: Build any-compiler (Windows)
         if: runner.os == 'Windows'
         shell: powershell
         run: |
           $version = $env:GITHUB_REF_NAME -replace '^v', ''
-          & g++ -O2 -std=c++11 -Wall -Wextra "-DAPP_VERSION=`"$version`"" src/main.cpp -o "any-compiler-${{ matrix.target.os }}-${{ matrix.target.arch }}${{ matrix.target.exe }}"
+          & g++ -O2 -std=c++11 -Wall -Wextra "-DAPP_VERSION_STRING=\`"$version\`"" src/main.cpp -o "any-compiler-${{ matrix.target.os }}-${{ matrix.target.arch }}${{ matrix.target.exe }}"
           if ($LASTEXITCODE -ne 0) { exit 1 }
 
       - name: Create SHA256 checksum (Unix)
@@ -89,7 +88,7 @@ jobs:
       - name: Build linux amd64 binary
         run: |
           VERSION="${GITHUB_REF_NAME#v}"
-          g++ -O2 -std=c++11 -Wall -Wextra -DAPP_VERSION=\"$VERSION\" src/main.cpp -o any-compiler
+          g++ -O2 -std=c++11 -Wall -Wextra -DAPP_VERSION_STRING=\"$VERSION\" src/main.cpp -o any-compiler
 
       - name: Build deb package
         run: |

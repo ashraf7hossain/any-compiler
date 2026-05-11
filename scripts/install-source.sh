@@ -25,7 +25,7 @@ if [ ! -f "${SOURCE_DIR}/src/main.cpp" ]; then
   exit 1
 fi
 
-g++ -O2 -std=c++11 -Wall -Wextra -DAPP_VERSION=\"${VERSION}\" \
+g++ -O2 -std=c++11 -Wall -Wextra -DAPP_VERSION_STRING=\"${VERSION}\" \
   "${SOURCE_DIR}/src/main.cpp" -o "${TMP_BINARY}"
 
 chmod +x "${TMP_BINARY}"

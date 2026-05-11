@@ -2,7 +2,11 @@
 #include <iostream>
 #include <cstring>
 
-const char *APP_VERSION = "1.0.01";
+#ifndef APP_VERSION_STRING
+#define APP_VERSION_STRING "1.0.01"
+#endif
+
+const char *APP_VERSION = APP_VERSION_STRING;
 
 int main(int argc, char *argv[]) {
   if (argc < 2) {

@@ -46,12 +46,18 @@ int main(int argc, char *argv[]) {
 
     if (source_code) {
       // printf("Source code:\n%s\n", source_code);
-      compile_code(source_file,
-                   get_language_name_from_extension(read_extension(source_file)),
-                   read_extension(source_file));
+      int result = compile_code(
+          source_file,
+          get_language_name_from_extension(read_extension(source_file)),
+          read_extension(source_file));
       free(source_code);
+      return result;
     } else {
-      printf("Failed to read source file: %s\n", source_file);
+      fprintf(stderr, "Failed to read source file: %s\n", source_file);
+      return 1;
     }
   }
+
+  fprintf(stderr, "Usage: any-compiler <source-file> [--version|--help]\n");
+  return 1;
 }

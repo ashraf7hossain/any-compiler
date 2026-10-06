@@ -3,13 +3,15 @@
 #include "file_helper.cpp"
 #include "http_helper.cpp"
 
-void compile_code(const char *source_file, const char *language,
-                  const char *extension) {
+int compile_code(const char *source_file, const char *language,
+                 const char *extension) {
   char *source_code = read_file_to_string(source_file);
   if (source_code) {
-    post_source_code(source_code, language, extension);
+    int result = post_source_code(source_code, language, extension);
     free(source_code);
+    return result;
   } else {
-    printf("Failed to read source file: %s\n", source_file);
+    fprintf(stderr, "Failed to read source file: %s\n", source_file);
+    return 1;
   }
 }

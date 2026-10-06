@@ -11,20 +11,21 @@ const char *BASE_URL = "https://onecompiler.com/api/code/exec";
 
 const char *REQUEST_STR = "";
 
-void make_http_call(const char *request) {
+int make_http_call(const char *request) {
   FILE *f_curl = popen(request, "r");
 
   if (f_curl == NULL) {
     fprintf(stderr, "Error opening pipe to curl\n");
-    exit(1);
+    return 1;
   }
 
+  int response_received = 0;
   char buffer[BUFFER_SIZE];
   while (fgets(buffer, sizeof(buffer), f_curl)) {
-    // printf("response: %s\n", buffer);
     if (buffer[0] == '{') {
       SampleStruct *sample = parse_sample_struct(buffer);
       if (sample != NULL) {
+        response_received = 1;
         printf("parsed status: %d (%s)\n", sample->status.id,
                sample->status.description ? sample->status.description
                                           : "unknown");
@@ -39,7 +40,18 @@ void make_http_call(const char *request) {
     }
   }
 
-  pclose(f_curl);
+  int curl_status = pclose(f_curl);
+  if (!response_received) {
+    fprintf(stderr,
+            "No usable response from OneCompiler. Check your internet "
+            "connection and try again.\n");
+  }
+  if (curl_status != 0) {
+    fprintf(stderr, "The OneCompiler request failed (curl status %d).\n",
+            curl_status);
+    return 1;
+  }
+  return response_received ? 0 : 1;
 }
 
 int write_text_file(const char *path, const char *content) {
@@ -55,18 +67,18 @@ int write_text_file(const char *path, const char *content) {
   return written == content_len;
 }
 
-void post_source_code(const char *source_code, const char *language,
-                      const char *extension) {
+int post_source_code(const char *source_code, const char *language,
+                     const char *extension) {
   if (source_code == NULL) {
     fprintf(stderr, "Source code is null\n");
-    return;
+    return 1;
   }
 
   char payload[MAX_PAYLOAD_SIZE];
   char *escaped_code = escape_for_json(source_code);
   if (escaped_code == NULL) {
     fprintf(stderr, "Failed to escape source code\n");
-    return;
+    return 1;
   }
 
   snprintf(payload, sizeof(payload),
@@ -80,19 +92,20 @@ void post_source_code(const char *source_code, const char *language,
   if (!write_text_file(payload_file, payload)) {
     fprintf(stderr, "Failed to write payload file\n");
     free(escaped_code);
-    return;
+    return 1;
   }
 
   char request_curl[MAX_COMMAND_LENGTH];
   snprintf(request_curl, sizeof(request_curl),
-           "curl -s -X POST \"%s\" "
+           "curl -sS -X POST \"%s\" "
            "-H \"Content-Type: application/json\" "
            "--data-binary \"@%s\"",
            BASE_URL, payload_file);
 
-  make_http_call(request_curl);
+  int result = make_http_call(request_curl);
 
   remove(payload_file);
 
   free(escaped_code);
+  return result;
 }

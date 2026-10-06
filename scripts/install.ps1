@@ -39,7 +39,7 @@ $builtBinary = Join-Path $buildDir $BinaryName
 
 $versionFlag = "-DAPP_VERSION_STRING=\`"$Version\`""
 Write-Host "Building any-compiler from source..."
-& g++ -O2 -std=c++11 -Wall -Wextra $versionFlag $mainFile -o $builtBinary
+& g++ -O2 -std=c++11 -Wall -Wextra -static -static-libgcc -static-libstdc++ $versionFlag $mainFile -o $builtBinary
 if ($LASTEXITCODE -ne 0) {
     throw "Build failed."
 }

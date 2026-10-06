@@ -29,6 +29,13 @@ char *read_file_to_string(const char *filename_with_path) {
     return NULL;
   }
 
+  if (length >= 3 && (unsigned char)buffer[0] == 0xEF &&
+      (unsigned char)buffer[1] == 0xBB &&
+      (unsigned char)buffer[2] == 0xBF) {
+    memmove(buffer, buffer + 3, (size_t)length - 3);
+    length -= 3;
+  }
+
   // printf("Read %zu bytes from file\n", bytes_read);
   buffer[length] = '\0'; // Null-terminate
 

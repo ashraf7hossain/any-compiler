@@ -53,7 +53,7 @@ jobs:
         shell: powershell
         run: |
           $version = $env:GITHUB_REF_NAME -replace '^v', ''
-          & g++ -O2 -std=c++11 -Wall -Wextra "-DAPP_VERSION_STRING=\`"$version\`"" src/main.cpp -o "any-compiler-${{ matrix.target.os }}-${{ matrix.target.arch }}${{ matrix.target.exe }}"
+          & g++ -O2 -std=c++11 -Wall -Wextra -static -static-libgcc -static-libstdc++ "-DAPP_VERSION_STRING=\`"$version\`"" src/main.cpp -o "any-compiler-${{ matrix.target.os }}-${{ matrix.target.arch }}${{ matrix.target.exe }}"
           if ($LASTEXITCODE -ne 0) { exit 1 }
 
       - name: Create SHA256 checksum (Unix)

@@ -9,6 +9,7 @@ RELEASE_FLAGS = -O2 -Wall -Wextra -std=c++11 -DAPP_VERSION_STRING=\"$(VERSION)\"
 
 ifeq ($(OS),Windows_NT)
 EXE_EXT = .exe
+RELEASE_FLAGS += -static -static-libgcc -static-libstdc++
 else
 EXE_EXT =
 endif

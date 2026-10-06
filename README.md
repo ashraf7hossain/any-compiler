@@ -1,196 +1,140 @@
-# any-compiler
+# any-compiler: Cross-Platform Code Compiler and Runner
 
-Compile and execute code in any language via the **OneCompiler API**.
+**any-compiler** is a cross-platform command-line tool for compiling and running source code in multiple programming languages. It reads a local source file, sends it to the [OneCompiler API](https://onecompiler.com/), and prints the execution result. Use it on Linux, macOS, or Windows for quick code experiments without installing each language runtime locally.
 
-## Installation
+Supported source languages include C, C++, C#, Go, Java, JavaScript, PHP, Python, Ruby, and Rust. An internet connection is required to send code to the OneCompiler API.
 
-### Quick install from release binary (Linux/macOS, no source code required)
+## Install
 
-Latest release:
-```bash
-curl -fsSL https://raw.githubusercontent.com/ashraf7hossain/any-compiler/main/scripts/install.sh | bash
-```
+### Linux
 
-Specific version:
-```bash
-curl -fsSL https://raw.githubusercontent.com/ashraf7hossain/any-compiler/main/scripts/install.sh | VERSION=1.0.0 REPO=ashraf7hossain/any-compiler bash
-```
-
-> Note: installer is binary-only by default. It fails if matching release assets are missing.
-
-### Linux / macOS (build and install globally from source)
+Download the latest Linux release binary from [GitHub Releases](https://github.com/ashraf7hossain/any-compiler/releases), or install it from source. For Debian or Ubuntu, install the C++ build tools first:
 
 ```bash
+sudo apt update
+sudo apt install -y build-essential make git
 git clone https://github.com/ashraf7hossain/any-compiler.git
 cd any-compiler
-make install-global VERSION=1.0.0
+make install-global VERSION=dev
 ```
 
-By default this installs to `/usr/local/bin/any-compiler`.
+The source installer places `any-compiler` in `/usr/local/bin` by default and may ask for `sudo` permission.
 
-### Windows (PowerShell, build and install globally from source)
+### macOS
+
+Download the macOS binary for your processor from [GitHub Releases](https://github.com/ashraf7hossain/any-compiler/releases), or install from source. Install Apple's C++ build tools and Git if they are not already available:
+
+```bash
+xcode-select --install
+git clone https://github.com/ashraf7hossain/any-compiler.git
+cd any-compiler
+make install-global VERSION=dev
+```
+
+The source installer places `any-compiler` in `/usr/local/bin` by default. The release page provides separate Intel (`darwin-amd64`) and Apple silicon (`darwin-arm64`) binaries.
+
+### Windows
+
+Download `any-compiler-windows-amd64.exe` from [GitHub Releases](https://github.com/ashraf7hossain/any-compiler/releases). To build and install from source, install Git and a MinGW-w64 `g++` toolchain, ensure `g++` is available on `PATH`, and run in PowerShell:
 
 ```powershell
 git clone https://github.com/ashraf7hossain/any-compiler.git
 cd any-compiler
-powershell -ExecutionPolicy Bypass -File .\scripts\install.ps1 -Version 1.0.0
+powershell -ExecutionPolicy Bypass -File .\scripts\install.ps1 -Version dev
 ```
 
-This installs `any-compiler.exe` to `%USERPROFILE%\.local\bin` and adds that path to your user `PATH`.
+The installer puts `any-compiler.exe` in `%USERPROFILE%\.local\bin` and adds that folder to your user `PATH`. Open a new terminal after installation. Release executables use static MinGW runtime linking and do not require MinGW on the destination computer.
 
-Optional source fallback (only if you explicitly want it):
-```bash
-curl -fsSL https://raw.githubusercontent.com/ashraf7hossain/any-compiler/main/scripts/install.sh | VERSION=1.0.0 ALLOW_SOURCE_FALLBACK=1 REPO=ashraf7hossain/any-compiler bash
-```
+### Install from a release on Linux or macOS
 
-### Homebrew (macOS/Linux)
+The installer downloads the matching binary for the current operating system and CPU architecture. It installs to `/usr/local/bin` by default and may require `sudo`:
 
 ```bash
-brew tap ashraf7hossain/any-compiler
-brew install any-compiler
+curl -fsSL https://raw.githubusercontent.com/ashraf7hossain/any-compiler/main/scripts/install.sh | bash
 ```
+
+To install a specific published version, set `VERSION` (without the `v` prefix):
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/ashraf7hossain/any-compiler/main/scripts/install.sh | VERSION=1.0.0 bash
+```
+
+This installer requires a matching release asset. See [GitHub Releases](https://github.com/ashraf7hossain/any-compiler/releases) for available versions and binaries.
+
+## Run from Source
+
+### Linux and macOS
+
+Install `g++`, `make`, and Git, then build and run from the repository root:
+
+```bash
+git clone https://github.com/ashraf7hossain/any-compiler.git
+cd any-compiler
+make build
+./any-compiler --version
+./any-compiler src/test/test.go
+```
+
+To build an optimized binary, run `make release`. To install the locally built program globally, run `make install-global VERSION=dev`.
+
+### Windows
+
+With MinGW-w64 `g++` installed and available on `PATH`, build and run in PowerShell:
+
+```powershell
+git clone https://github.com/ashraf7hossain/any-compiler.git
+cd any-compiler
+g++ -std=c++11 -Wall -Wextra src/main.cpp -o any-compiler.exe
+.\any-compiler.exe --version
+.\any-compiler.exe .\src\test\test.go
+```
+
+To install the locally built program and add it to your user `PATH`, run `powershell -ExecutionPolicy Bypass -File .\scripts\install.ps1 -Version dev`.
+
+## Develop in the VS Code Dev Container
+
+The repository includes a VS Code Dev Container based on the official GCC image. Install Docker Desktop (or Docker Engine with Docker Compose), Visual Studio Code, and the **Dev Containers** extension. Then:
+
+1. Clone this repository and open its folder in VS Code.
+2. Open the Command Palette and select **Dev Containers: Reopen in Container**.
+3. In the container terminal, build and run the CLI:
+
+```bash
+make build
+./any-compiler --version
+./any-compiler src/test/test.go
+```
+
+The container mounts the repository into `/usr/src/app`, so edits made in VS Code remain in your local checkout. Running a source file contacts the OneCompiler API and requires network access.
 
 ## Usage
 
-```bash
+```text
 any-compiler <source-file>
 ```
 
-### Examples
+Examples:
 
 ```bash
-# Python
 any-compiler hello.py
-
-# Rust
+any-compiler main.go
 any-compiler main.rs
-
-# JavaScript
-any-compiler script.js
-
-# C++
-any-compiler program.cpp
-
-# Java
 any-compiler App.java
+any-compiler program.cpp
 ```
 
-## Supported Languages
+Use `any-compiler --help` to see the command options. any-compiler sends source code to the OneCompiler API at `https://onecompiler.com/api/code/exec`; code is compiled and executed remotely, and the CLI displays the result.
 
-- C
-- C++
-- Python
-- JavaScript
-- Java
-- Ruby
-- Go
-- Rust
-- PHP
-- C#
+## Build Requirements
 
-## Features
-
-✅ Compile and run code in any language  
-✅ Real-time execution output  
-✅ Error handling and reporting  
-✅ JSON response parsing  
-✅ Global CLI tool  
-
-## Architecture
-
-```
-any-compiler
-├── src/
-│   ├── main.cpp           # Entry point
-│   └── include/
-│       ├── compiler.cpp   # Compilation logic
-│       ├── file_helper.cpp # File I/O
-│       ├── http_helper.cpp # API communication
-│       └── json_helper.cpp # JSON parsing
-├── .github/
-│   └── workflows/
-│       └── release.yml    # GitHub Actions CI/CD
-├── scripts/
-│   └── install.sh         # Universal installer
-├── homebrew/
-│   └── any-compiler.rb    # Homebrew formula
-└── packaging/
-    ├── build-deb.sh       # Debian packaging
-    └── build-rpm.sh       # RPM packaging
-```
-
-## How It Works
-
-1. **Read source file** - Reads the provided source code file
-2. **Send to API** - Posts the code to OneCompiler API
-3. **Execute** - OneCompiler compiles and runs the code
-4. **Return results** - Displays stdout, stderr, and status
-
-## Building
-
-### Debug Build
-```bash
-g++ src/main.cpp -o any-compiler
-```
-
-### Release Build
-```bash
-g++ -O2 src/main.cpp -o any-compiler
-```
+- Linux and macOS: a C++11-compatible `g++` compiler; `make` is used by the provided Makefile.
+- Windows: MinGW-w64 `g++` for building from source. Downloaded release binaries include the MinGW runtime statically.
+- All operating systems: internet access to call the OneCompiler API.
 
 ## Contributing
 
-Contributions are welcome! Please:
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit changes (`git commit -m 'Add amazing feature'`)
-4. Push to branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+Issues and pull requests are welcome. Report bugs or request features in the [GitHub issue tracker](https://github.com/ashraf7hossain/any-compiler/issues).
 
 ## License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
-
-## API Reference
-
-Uses the **OneCompiler API** endpoint:
-- Base URL: `https://onecompiler.com/api/code/exec`
-- Method: POST
-- Response format: JSON
-
-## Troubleshooting
-
-### Command not found
-
-Make sure your install directory is in your `PATH`:
-
-```bash
-echo $PATH
-# Linux/macOS should include /usr/local/bin
-# Windows should include %USERPROFILE%\.local\bin
-```
-
-### CURL errors
-
-Ensure `curl` is installed:
-```bash
-sudo apt-get install curl    # Debian/Ubuntu
-brew install curl             # macOS
-```
-
-### Permission denied
-
-Make the binary executable:
-```bash
-chmod +x any-compiler
-sudo mv any-compiler /usr/local/bin/
-```
-
-## Support
-
-For issues and feature requests, visit the [GitHub Issues](https://github.com/yourusername/any-compiler/issues) page.
-
----
-
-Made with ❤️ for developers who love simplicity.
+any-compiler is distributed under the [MIT License](LICENSE).

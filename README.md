@@ -50,13 +50,13 @@ The installer puts `any-compiler.exe` in `%USERPROFILE%\.local\bin` and adds tha
 The installer downloads the matching binary for the current operating system and CPU architecture. It installs to `/usr/local/bin` by default and may require `sudo`:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/ashraf7hossain/any-compiler/main/scripts/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/ashraf7hossain/any-compiler/master/scripts/install.sh | bash
 ```
 
 To install a specific published version, set `VERSION` (without the `v` prefix):
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/ashraf7hossain/any-compiler/main/scripts/install.sh | VERSION=1.0.0 bash
+curl -fsSL https://raw.githubusercontent.com/ashraf7hossain/any-compiler/master/scripts/install.sh | VERSION=1.0.0 bash
 ```
 
 This installer requires a matching release asset. See [GitHub Releases](https://github.com/ashraf7hossain/any-compiler/releases) for available versions and binaries.
